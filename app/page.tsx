@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -88,6 +89,10 @@ export default function Home() {
   // --- hooks first
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState(Date.now());
+const receiverLink =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/?invite=receiver`
+    : "";
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
