@@ -82,7 +82,8 @@ function getExpiryClass(expiresAt: number, now: number) {
    Page
 ======================= */
 
-export default function Home() {
+function Home() {
+
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get("invite");
 
@@ -276,5 +277,14 @@ const receiverLink =
         )}
       </main>
     </>
+  );
+}
+import { Suspense } from "react";
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <Home />
+    </Suspense>
   );
 }
