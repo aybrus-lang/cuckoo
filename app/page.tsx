@@ -1,290 +1,226 @@
 "use client";
-export const dynamic = "force-dynamic";
 
-import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
-
-import SenderView from "./components/SenderView";
-import ReceiverView from "./components/ReceiverView";
-const receiverLink =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/?invite=receiver`
-    : "";
-
-/* =======================
-   Types
-======================= */
-
-type Notification = {
-  id: number;
-  creator: string;
-  message: string;
-  time: string;
-  emoji: string;
-  closing?: boolean;
-  expiresAt: number;
-};
-
-type Invitation = {
-  id: number;
-  name: string;
-  status: "invited" | "accepted" | "rejected";
-};
-
-/* =======================
-   Styles
-======================= */
-
-const styles = `
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-6px); }
-}
-
-.notification { animation: slideIn 0.25s ease-out; }
-.notification.closing { animation: slideOut 0.2s ease-in forwards; }
-.notification:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
-
-.notification.expiring { opacity: 0.65; transform: scale(0.98); transition: opacity 0.6s ease, transform 0.6s ease; }
-.notification.expired { opacity: 0; transform: translateY(-4px) scale(0.98); transition: opacity 0.4s ease, transform 0.4s ease; }
-.notification.expiring:hover { opacity: 0.85; transform: scale(1); }
-
-.creator-group { overflow: hidden; transition: max-height 0.35s ease, opacity 0.25s ease; }
-.creator-group.collapsed { max-height: 0; opacity: 0; }
-.creator-group.expanded { max-height: 500px; opacity: 1; }
-`;
-
-/* =======================
-   Helper functions
-======================= */
-
-function formatRemaining(ms: number) {
-  if (ms <= 0) return "expired";
-  const totalMinutes = Math.floor(ms / 60000);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-}
-
-function getExpiryClass(expiresAt: number, now: number) {
-  const remaining = expiresAt - now;
-  if (remaining <= 0) return "expired";
-  if (remaining < 5 * 60 * 1000) return "expiring";
-  return "";
-}
-
-/* =======================
-   Page
-======================= */
-
-function Home() {
-
-  const searchParams = useSearchParams();
-  const inviteToken = searchParams.get("invite");
-
-  // --- hooks first
-  const [mounted, setMounted] = useState(false);
-  const [now, setNow] = useState(Date.now());
-const receiverLink =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/?invite=receiver`
-    : "";
-
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [inviteName, setInviteName] = useState("");
-  const [acceptedMessage, setAcceptedMessage] = useState<string | null>(null);
-
-  const STACK_LIMIT = 3;
-
-  // --- hydration safety and localStorage
-  useEffect(() => {
-    setMounted(true);
-
-    if (typeof window !== "undefined") {
-      const savedNotifs = localStorage.getItem("cuckoo_notifications");
-      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
-
-      const savedInvites = localStorage.getItem("cuckoo_invitations");
-      if (savedInvites) setInvitations(JSON.parse(savedInvites));
-    }
-  }, []);
-
-  // --- ticking clock
-  useEffect(() => {
-    if (!mounted) return;
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, [mounted]);
-
-  // --- persist invitations
-  useEffect(() => {
-    localStorage.setItem("cuckoo_invitations", JSON.stringify(invitations));
-  }, [invitations]);
-
-  // --- persist notifications
-  useEffect(() => {
-    localStorage.setItem("cuckoo_notifications", JSON.stringify(notifications));
-  }, [notifications]);
-
-  // --- remove expired notifications automatically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const current = Date.now();
-
-      // mark expiring/expired
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.expiresAt <= current ? { ...n, closing: true } : n
-        )
-      );
-
-      // remove after CSS fade
-      setTimeout(() => {
-        setNotifications((prev) =>
-          prev.filter((n) => n.expiresAt > Date.now())
-        );
-      }, 450);
-    }, 30_000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // --- storage sync for other tabs
-  useEffect(() => {
-    function handleStorage(e: StorageEvent) {
-      if (e.key === "cuckoo_notifications" && e.newValue) {
-        setNotifications(JSON.parse(e.newValue));
-      }
-      if (e.key === "cuckoo_invitations" && e.newValue) {
-        setInvitations(JSON.parse(e.newValue));
-      }
-    }
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
-
-  // --- conditional return after hooks
-  if (!mounted) return null;
-
-  const ROLE: "sender" | "receiver" = inviteToken ? "receiver" : "sender";
-
-  // --- actions
-  function sendInvite() {
-    if (!inviteName.trim()) return;
-    const newInvite: Invitation = {
-      id: Date.now(),
-      name: inviteName.trim(),
-      status: "invited",
-    };
-    setInvitations((prev) => [newInvite, ...prev]);
-    setInviteName("");
-  }
-
-  function sendNotification() {
-    const emojis = ["🔥", "💦", "🚨"];
-    const newNotification: Notification = {
-      id: Date.now(),
-      creator: "Alex",
-      message: "New post published",
-      time: new Date().toLocaleTimeString(),
-      emoji: emojis[Math.floor(Math.random() * emojis.length)],
-      expiresAt: Date.now() + 1000 * 60 * 60 * 6,
-    };
-    setNotifications((prev) =>
-      prev.length >= 20 ? prev : [newNotification, ...prev]
-    );
-  }
-
-  function acceptInvite(id: number) {
-    setInvitations((prev) =>
-      prev.map((invite) =>
-        invite.id === id ? { ...invite, status: "accepted" } : invite
-      )
-    );
-    setAcceptedMessage("Invitation accepted. Notifications unlocked.");
-    setTimeout(() => setAcceptedMessage(null), 2500);
-  }
-
-  function rejectInvite(id: number) {
-    setInvitations((prev) =>
-      prev.map((invite) =>
-        invite.id === id ? { ...invite, status: "rejected" } : invite
-      )
-    );
-  }
-
-  function dismissNotification(id: number) {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, closing: true } : n))
-    );
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 200);
-  }
-
-  // --- derived data
-  const visibleNotifications = notifications.slice(0, STACK_LIMIT);
-
-  const notificationsByCreator = visibleNotifications.reduce(
-    (groups: Record<string, Notification[]>, notification: Notification) => {
-      if (!groups[notification.creator]) groups[notification.creator] = [];
-      groups[notification.creator].push(notification);
-      return groups;
-    },
-    {}
-  );
-
-  const hasAccess = invitations.some((invite) => invite.status === "accepted");
-
-  /* =======================
-     Render
-  ======================= */
-
+export default function HomePage() {
   return (
-    <>
-      <style>{styles}</style>
+    <main style={styles.page}>
+      {/* HERO */}
+      <section style={styles.hero}>
+        <h1 style={styles.headline}>Give access to the chosen few.</h1>
 
-      <main>
-        <h1>🐦 Cuckoo!</h1>
+        <p style={styles.subheadline}>
+          Cuckoo lets you invite, notify, and include selected people in
+          real-time experiences — privately and on your terms.
+        </p>
 
-        {ROLE === "sender" && (
-          <SenderView
-            sendNotification={sendNotification}
-            sendInvite={sendInvite}
-            inviteName={inviteName}
-            setInviteName={setInviteName}
-            invitations={invitations}
-          />
-        )}
+        <button style={styles.primaryButton}>
+          Start Sending
+        </button>
 
-        {ROLE === "receiver" && (
-          <ReceiverView
-            invitations={invitations}
-            acceptInvite={acceptInvite}
-            rejectInvite={rejectInvite}
-            hasAccess={hasAccess}
-            notificationsByCreator={notificationsByCreator}
-            dismissNotification={dismissNotification}
-            acceptedMessage={acceptedMessage}
-            now={now}
-          />
-        )}
-      </main>
-    </>
+        <p style={styles.subtle}>
+          Private. Intentional. Invitation-only.
+        </p>
+      </section>
+
+      {/* WHAT IT IS */}
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}>
+          Inclusion without proximity
+        </h2>
+
+        <p style={styles.text}>
+          Cuckoo allows you to share moments with selected people in real time —
+          wherever they are.
+        </p>
+
+        <ul style={styles.list}>
+          <li>You decide who receives access</li>
+          <li>You decide when inclusion happens</li>
+          <li>Nothing is public. Nothing is automatic</li>
+        </ul>
+
+        <p style={styles.text}>
+          Presence is optional. Access is intentional.
+        </p>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section style={styles.sectionAlt}>
+        <h2 style={styles.sectionTitle}>
+          Invite → Include → Control
+        </h2>
+
+        <div style={styles.steps}>
+          <div style={styles.step}>
+            <h3>Invite selectively</h3>
+            <p>Choose who receives access. Invitations are private.</p>
+          </div>
+
+          <div style={styles.step}>
+            <h3>Share in real time</h3>
+            <p>Send notifications when you decide to include them.</p>
+          </div>
+
+          <div style={styles.step}>
+            <h3>Maintain control</h3>
+            <p>You control timing, access, and visibility at all times.</p>
+          </div>
+        </div>
+
+        <p style={styles.textCenter}>
+          No feeds. No algorithms. Only chosen recipients.
+        </p>
+      </section>
+
+      {/* WHO IT'S FOR */}
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}>
+          Designed for intentional connection
+        </h2>
+
+        <ul style={styles.list}>
+          <li>Creators who reward select followers</li>
+          <li>Partners sharing presence across distance</li>
+          <li>People who value controlled, private inclusion</li>
+        </ul>
+
+        <p style={styles.text}>
+          If access matters, Cuckoo exists for that moment.
+        </p>
+      </section>
+
+      {/* PRIVACY */}
+      <section style={styles.sectionAlt}>
+        <h2 style={styles.sectionTitle}>Private by design</h2>
+
+        <ul style={styles.list}>
+          <li>Invitation-only access</li>
+          <li>No public profiles</li>
+          <li>No discovery</li>
+          <li>No broadcasting</li>
+          <li>No algorithmic distribution</li>
+        </ul>
+
+        <p style={styles.textCenter}>
+          Every interaction happens because someone chose it.
+        </p>
+      </section>
+
+      {/* CTA */}
+      <section style={styles.cta}>
+        <h2 style={styles.sectionTitle}>Create your circle</h2>
+
+        <p style={styles.textCenter}>
+          Choose who receives access. Decide when inclusion happens.
+        </p>
+
+        <button style={styles.primaryButton}>
+          Start Sending
+        </button>
+      </section>
+
+      <footer style={styles.footer}>
+        Connection doesn’t require proximity.
+      </footer>
+    </main>
   );
 }
-import { Suspense } from "react";
 
-export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <Home />
-    </Suspense>
-  );
-}
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    fontFamily: "system-ui, sans-serif",
+    lineHeight: 1.5,
+    color: "#111",
+    maxWidth: 720,
+    margin: "0 auto",
+    padding: "24px 16px 40px",
+  },
+
+  hero: {
+    textAlign: "center",
+    marginBottom: 48,
+  },
+
+  headline: {
+    fontSize: "clamp(28px, 5vw, 40px)",
+    fontWeight: 600,
+    marginBottom: 12,
+  },
+
+  subheadline: {
+    fontSize: 18,
+    opacity: 0.85,
+    marginBottom: 20,
+  },
+
+  primaryButton: {
+    padding: "14px 22px",
+    fontSize: 16,
+    borderRadius: 10,
+    border: "none",
+    background: "#111",
+    color: "#fff",
+    cursor: "pointer",
+    marginBottom: 12,
+  },
+
+  subtle: {
+    fontSize: 13,
+    opacity: 0.6,
+  },
+
+  section: {
+    marginBottom: 48,
+  },
+
+  sectionAlt: {
+    marginBottom: 48,
+    padding: 20,
+    borderRadius: 14,
+    background: "#f6f6f6",
+  },
+
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 600,
+    marginBottom: 12,
+  },
+
+  text: {
+    marginBottom: 12,
+    opacity: 0.9,
+  },
+
+  textCenter: {
+    textAlign: "center",
+    opacity: 0.9,
+  },
+
+  list: {
+    paddingLeft: 18,
+    marginBottom: 12,
+  },
+
+  steps: {
+    display: "grid",
+    gap: 16,
+    marginBottom: 12,
+  },
+
+  step: {
+    padding: 12,
+    borderRadius: 10,
+    background: "#fff",
+  },
+
+  cta: {
+    textAlign: "center",
+    marginTop: 40,
+  },
+
+  footer: {
+    textAlign: "center",
+    marginTop: 48,
+    fontSize: 14,
+    opacity: 0.6,
+  },
+};
