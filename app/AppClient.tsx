@@ -105,25 +105,79 @@ export default function AppClient() {
   }
 
   return (
-    <main style={{ padding: 24, textAlign: "center" }}>
-      <h1>Give access to the chosen few.</h1>
-      <p>
+  <main
+    style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      background:
+        "linear-gradient(180deg, #0a0a0a 0%, #111 40%, #0a0a0a 100%)",
+      color: "white",
+      textAlign: "center",
+    }}
+  >
+    <div style={{ maxWidth: 520, width: "100%" }}>
+      <div style={{ fontSize: 42, marginBottom: 10 }}>🐦</div>
+
+      <h1
+        style={{
+          fontSize: 32,
+          fontWeight: 600,
+          letterSpacing: "-0.02em",
+          marginBottom: 14,
+        }}
+      >
+        Give access to the chosen few.
+      </h1>
+
+      <p
+        style={{
+          fontSize: 16,
+          lineHeight: 1.6,
+          opacity: 0.75,
+          marginBottom: 28,
+        }}
+      >
         Cuckoo lets you invite, notify, and include selected people in
         real-time experiences — privately and on your terms.
       </p>
+
       <button
         onClick={() => setMode("sender")}
         style={{
-          padding: "12px 20px",
-          borderRadius: 8,
+          width: "100%",
+          padding: "14px 18px",
+          borderRadius: 12,
           border: "none",
-          background: "#111",
-          color: "#fff",
+          fontSize: 16,
+          fontWeight: 500,
+          background: "white",
+          color: "black",
           cursor: "pointer",
+          transition: "transform 0.15s ease, box-shadow 0.15s ease",
+          boxShadow: "0 6px 18px rgba(255,255,255,0.15)",
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = "scale(0.98)";
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
         }}
       >
         Start Sending
       </button>
-    </main>
-  );
-}
+
+      <div
+        style={{
+          marginTop: 24,
+          fontSize: 13,
+          opacity: 0.45,
+        }}
+      >
+        Private. Selective. Intentional.
+      </div>
+    </div>
+  </main>
+);
