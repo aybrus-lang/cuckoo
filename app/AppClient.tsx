@@ -2,7 +2,6 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-
 import SenderView from "./components/SenderView";
 import ReceiverView from "./components/ReceiverView";
 
@@ -31,32 +30,35 @@ export default function AppClient() {
   const [inviteName, setInviteName] = useState("");
   const [acceptedMessage, setAcceptedMessage] = useState<string | null>(null);
 
+  const hasAccess = invitations.some((i) => i.status === "accepted");
+  const notificationsByCreator = { Alex: notifications };
+
   function sendInvite() {
     if (!inviteName.trim()) return;
-    const newInvite: Invitation = {
-      id: Date.now(),
-      name: inviteName.trim(),
-      status: "invited",
-    };
-    setInvitations((prev) => [newInvite, ...prev]);
+    setInvitations([
+      { id: Date.now(), name: inviteName.trim(), status: "invited" },
+      ...invitations,
+    ]);
     setInviteName("");
   }
 
   function sendNotification() {
-    const newNotification: Notification = {
-      id: Date.now(),
-      creator: "Alex",
-      message: "New moment",
-      time: new Date().toLocaleTimeString(),
-      emoji: "•",
-      expiresAt: Date.now() + 1000 * 60 * 60,
-    };
-    setNotifications((prev) => [newNotification, ...prev]);
+    setNotifications([
+      {
+        id: Date.now(),
+        creator: "Alex",
+        message: "New moment",
+        time: new Date().toLocaleTimeString(),
+        emoji: "•",
+        expiresAt: Date.now() + 1000 * 60 * 60,
+      },
+      ...notifications,
+    ]);
   }
 
   function acceptInvite(id: number) {
-    setInvitations((prev) =>
-      prev.map((invite) =>
+    setInvitations(
+      invitations.map((invite) =>
         invite.id === id ? { ...invite, status: "accepted" } : invite
       )
     );
@@ -64,24 +66,16 @@ export default function AppClient() {
   }
 
   function rejectInvite(id: number) {
-    setInvitations((prev) =>
-      prev.map((invite) =>
+    setInvitations(
+      invitations.map((invite) =>
         invite.id === id ? { ...invite, status: "rejected" } : invite
       )
     );
   }
 
   function dismissNotification(id: number) {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setNotifications(notifications.filter((n) => n.id !== id));
   }
-
-  const hasAccess = invitations.some(
-    (invite) => invite.status === "accepted"
-  );
-
-  const notificationsByCreator = {
-    Alex: notifications,
-  };
 
   if (invite === "receiver") {
     return (
@@ -117,7 +111,6 @@ export default function AppClient() {
         Cuckoo lets you invite, notify, and include selected people in
         real-time experiences — privately and on your terms.
       </p>
-
       <button
         onClick={() => setMode("sender")}
         style={{
