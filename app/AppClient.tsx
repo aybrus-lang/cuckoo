@@ -1,110 +1,4 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import SenderView from "./components/SenderView";
-import ReceiverView from "./components/ReceiverView";
-
-type Notification = {
-  id: number;
-  creator: string;
-  message: string;
-  time: string;
-  emoji: string;
-  expiresAt: number;
-};
-
-type Invitation = {
-  id: number;
-  name: string;
-  status: "invited" | "accepted" | "rejected";
-};
-
-export default function AppClient() {
-  const searchParams = useSearchParams();
-  const invite = searchParams.get("invite");
-
-  const [mode, setMode] = useState<"home" | "sender">("home");
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [inviteName, setInviteName] = useState("");
-  const [acceptedMessage, setAcceptedMessage] = useState<string | null>(null);
-
-  const hasAccess = invitations.some((i) => i.status === "accepted");
-  const notificationsByCreator = { Alex: notifications };
-
-  function sendInvite() {
-    if (!inviteName.trim()) return;
-    setInvitations([
-      { id: Date.now(), name: inviteName.trim(), status: "invited" },
-      ...invitations,
-    ]);
-    setInviteName("");
-  }
-
-  function sendNotification() {
-    setNotifications([
-      {
-        id: Date.now(),
-        creator: "Alex",
-        message: "New moment",
-        time: new Date().toLocaleTimeString(),
-        emoji: "•",
-        expiresAt: Date.now() + 1000 * 60 * 60,
-      },
-      ...notifications,
-    ]);
-  }
-
-  function acceptInvite(id: number) {
-    setInvitations(
-      invitations.map((invite) =>
-        invite.id === id ? { ...invite, status: "accepted" } : invite
-      )
-    );
-    setAcceptedMessage("Access confirmed");
-  }
-
-  function rejectInvite(id: number) {
-    setInvitations(
-      invitations.map((invite) =>
-        invite.id === id ? { ...invite, status: "rejected" } : invite
-      )
-    );
-  }
-
-  function dismissNotification(id: number) {
-    setNotifications(notifications.filter((n) => n.id !== id));
-  }
-
-  if (invite === "receiver") {
-    return (
-      <ReceiverView
-        invitations={invitations}
-        acceptInvite={acceptInvite}
-        rejectInvite={rejectInvite}
-        hasAccess={hasAccess}
-        notificationsByCreator={notificationsByCreator}
-        dismissNotification={dismissNotification}
-        acceptedMessage={acceptedMessage}
-        now={Date.now()}
-      />
-    );
-  }
-
-  if (mode === "sender") {
-    return (
-      <SenderView
-        sendNotification={sendNotification}
-        sendInvite={sendInvite}
-        inviteName={inviteName}
-        setInviteName={setInviteName}
-        invitations={invitations}
-      />
-    );
-  }
-
-  return (
+return (
   <main
     style={{
       minHeight: "100vh",
@@ -113,20 +7,38 @@ export default function AppClient() {
       justifyContent: "center",
       padding: 24,
       background:
-        "linear-gradient(180deg, #0a0a0a 0%, #111 40%, #0a0a0a 100%)",
+        "radial-gradient(circle at 50% 30%, #1a1a1a 0%, #0a0a0a 60%)",
       color: "white",
       textAlign: "center",
     }}
   >
-    <div style={{ maxWidth: 520, width: "100%" }}>
-      <div style={{ fontSize: 42, marginBottom: 10 }}>🐦</div>
+    <div
+      style={{
+        maxWidth: 520,
+        width: "100%",
+        padding: 32,
+        borderRadius: 18,
+        background: "rgba(255,255,255,0.04)",
+        backdropFilter: "blur(10px)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 42,
+          marginBottom: 12,
+          opacity: 0.9,
+        }}
+      >
+        🐦
+      </div>
 
       <h1
         style={{
           fontSize: 32,
           fontWeight: 600,
           letterSpacing: "-0.02em",
-          marginBottom: 14,
+          marginBottom: 16,
         }}
       >
         Give access to the chosen few.
@@ -136,8 +48,8 @@ export default function AppClient() {
         style={{
           fontSize: 16,
           lineHeight: 1.6,
-          opacity: 0.75,
-          marginBottom: 28,
+          opacity: 0.7,
+          marginBottom: 30,
         }}
       >
         Cuckoo lets you invite, notify, and include selected people in
@@ -150,20 +62,24 @@ export default function AppClient() {
           width: "100%",
           padding: "14px 18px",
           borderRadius: 12,
-          border: "none",
+          border: "1px solid rgba(255,255,255,0.15)",
           fontSize: 16,
           fontWeight: 500,
-          background: "white",
-          color: "black",
+          background: "rgba(255,255,255,0.08)",
+          color: "white",
           cursor: "pointer",
-          transition: "transform 0.15s ease, box-shadow 0.15s ease",
-          boxShadow: "0 6px 18px rgba(255,255,255,0.15)",
+          transition: "all 0.2s ease",
         }}
-        onMouseDown={(e) => {
-          e.currentTarget.style.transform = "scale(0.98)";
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "white";
+          e.currentTarget.style.color = "black";
+          e.currentTarget.style.boxShadow =
+            "0 0 20px rgba(255,255,255,0.25)";
         }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+          e.currentTarget.style.color = "white";
+          e.currentTarget.style.boxShadow = "none";
         }}
       >
         Start Sending
@@ -174,9 +90,10 @@ export default function AppClient() {
           marginTop: 24,
           fontSize: 13,
           opacity: 0.45,
+          letterSpacing: "0.08em",
         }}
       >
-        Private. Selective. Intentional.
+        PRIVATE • SELECTIVE • INTENTIONAL
       </div>
     </div>
   </main>
