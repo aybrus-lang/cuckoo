@@ -1,14 +1,5 @@
 "use client";
 
-type Notification = {
-  id: number;
-  creator: string;
-  message: string;
-  time: string;
-  emoji: string;
-  expiresAt: number;
-};
-
 type Invitation = {
   id: number;
   name: string;
@@ -19,109 +10,111 @@ type ReceiverViewProps = {
   invitations: Invitation[];
   acceptInvite: (id: number) => void;
   rejectInvite: (id: number) => void;
-  hasAccess: boolean;
-  notificationsByCreator: Record<string, Notification[]>;
-  dismissNotification: (id: number) => void;
-  acceptedMessage: string | null;
-  now: number;
+  acceptedMessage?: string;
 };
 
 export default function ReceiverView({
   invitations,
   acceptInvite,
   rejectInvite,
-  hasAccess,
-  notificationsByCreator,
-  dismissNotification,
   acceptedMessage,
 }: ReceiverViewProps) {
   return (
-    <main style={{ padding: 20, maxWidth: 520, margin: "0 auto" }}>
-      <h2>Receiver</h2>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "radial-gradient(circle at 50% 20%, #1a1a1a 0%, #0a0a0a 60%)",
+        color: "white",
+        display: "flex",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 520,
+          background: "rgba(255,255,255,0.04)",
+          backdropFilter: "blur(10px)",
+          borderRadius: 18,
+          padding: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
+        }}
+      >
+        <h1 style={{ fontSize: 26, marginBottom: 6 }}>Receiver</h1>
+        <p style={{ opacity: 0.6, marginBottom: 24 }}>
+          You are part of a privileged experience.
+        </p>
 
-      {/* Acceptance message */}
-      {acceptedMessage && (
-        <div
-          style={{
-            padding: 12,
-            marginBottom: 16,
-            borderRadius: 8,
-            background: "#111",
-            color: "white",
-            textAlign: "center",
-          }}
-        >
-          Access confirmed. You are now part of a privileged experience.
-        </div>
-      )}
+        {acceptedMessage && (
+          <div
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              marginBottom: 20,
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          >
+            {acceptedMessage}
+          </div>
+        )}
 
-      {/* Invitations */}
-      {!hasAccess && (
-        <div style={{ marginBottom: 20 }}>
-          <h3>Invitations</h3>
+        <h3 style={{ marginBottom: 12 }}>Invitations</h3>
 
-          {invitations.length === 0 && <div>No invitations yet</div>}
+        {invitations.length === 0 && (
+          <p style={{ opacity: 0.5 }}>No invitations yet</p>
+        )}
 
-          {invitations.map((invite) => (
-            <div key={invite.id} style={{ marginBottom: 10 }}>
-              {invite.name}
-              {invite.status === "invited" && (
-                <div style={{ marginTop: 4 }}>
-                  <button onClick={() => acceptInvite(invite.id)}>
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => rejectInvite(invite.id)}
-                    style={{ marginLeft: 6 }}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
+        {invitations.map((invite) => (
+          <div
+            key={invite.id}
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ marginBottom: 12 }}>
+              {invite.name} invited you
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Notifications */}
-      {hasAccess && (
-        <div>
-          <h3>Notifications</h3>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => acceptInvite(invite.id)}
+                style={{
+                  flex: 1,
+                  padding: 10,
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+              >
+                Accept
+              </button>
 
-          {Object.keys(notificationsByCreator).length === 0 && (
-            <div>No notifications yet</div>
-          )}
-
-          {Object.entries(notificationsByCreator).map(
-            ([creator, notifications]) => (
-              <div key={creator} style={{ marginBottom: 16 }}>
-                <strong>{creator}</strong>
-
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    style={{
-                      padding: 10,
-                      marginTop: 6,
-                      borderRadius: 8,
-                      border: "1px solid #ddd",
-                    }}
-                  >
-                    {n.emoji} {n.message}
-                    <div style={{ fontSize: 12, opacity: 0.6 }}>{n.time}</div>
-                    <button
-                      onClick={() => dismissNotification(n.id)}
-                      style={{ marginTop: 6 }}
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
-        </div>
-      )}
+              <button
+                onClick={() => rejectInvite(invite.id)}
+                style={{
+                  flex: 1,
+                  padding: 10,
+                  borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "transparent",
+                  color: "rgba(255,255,255,0.6)",
+                  cursor: "pointer",
+                }}
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }

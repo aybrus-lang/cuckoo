@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./SenderView.module.css";
 
 type Invitation = {
@@ -25,8 +25,6 @@ export default function SenderView({
   invitations,
 }: SenderViewProps) {
   const [receiverLink, setReceiverLink] = useState("");
-  const [sentFlash, setSentFlash] = useState(false);
-  const [inviteFlash, setInviteFlash] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -40,62 +38,131 @@ export default function SenderView({
   }
 
   return (
-    <main style={{ padding: 20, maxWidth: 520, margin: "0 auto" }}>
-      <h2>Sender</h2>
-
-      {/* Receiver link */}
-      <div style={{ marginBottom: 16 }}>
-        <small>Receiver link</small>
-        <div style={{ display: "flex", gap: 8 }}>
-          <input value={receiverLink} readOnly style={{ flex: 1 }} />
-          <button onClick={copyLink}>Copy</button>
-        </div>
-      </div>
-
-      {/* Send notification */}
-      <button
-        className={`${styles.sendBtn} ${sentFlash ? styles.sent : ""}`}
-        onClick={() => {
-          sendNotification();
-          setSentFlash(true);
-          setTimeout(() => setSentFlash(false), 800);
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "radial-gradient(circle at 50% 20%, #1a1a1a 0%, #0a0a0a 60%)",
+        color: "white",
+        display: "flex",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 520,
+          background: "rgba(255,255,255,0.04)",
+          backdropFilter: "blur(10px)",
+          borderRadius: 18,
+          padding: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
         }}
       >
-        {sentFlash ? "Sent ✓" : "Send notification"}
-      </button>
+        <h1 style={{ fontSize: 26, marginBottom: 6 }}>Sender</h1>
+        <p style={{ opacity: 0.6, marginBottom: 24 }}>
+          Share moments with selected people.
+        </p>
 
-      {sentFlash && <div className={styles.flash}>✓ Notification sent</div>}
+        {/* Receiver link */}
+        <div style={{ marginBottom: 24 }}>
+          <small style={{ opacity: 0.6 }}>Receiver link</small>
+          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+            <input
+              value={receiverLink}
+              readOnly
+              style={{
+                flex: 1,
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.06)",
+                color: "white",
+              }}
+            />
+            <button
+              onClick={copyLink}
+              style={{
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.08)",
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
+              Copy
+            </button>
+          </div>
+        </div>
 
-      {/* Invite input */}
-      <div style={{ marginTop: 20 }}>
-        <input
-          placeholder="Invite name"
-          value={inviteName}
-          onChange={(e) => setInviteName(e.target.value)}
-          style={{ marginRight: 8 }}
-        />
+        {/* Invite input */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+          <input
+            value={inviteName}
+            onChange={(e) => setInviteName(e.target.value)}
+            placeholder="Invite name"
+            style={{
+              flex: 1,
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.06)",
+              color: "white",
+            }}
+          />
+
+          <button
+            onClick={sendInvite}
+            style={{
+              padding: "12px 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(255,255,255,0.08)",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Invite
+          </button>
+        </div>
+
+        {/* Send notification */}
         <button
-          onClick={() => {
-            sendInvite();
-            setInviteFlash(true);
-            setTimeout(() => setInviteFlash(false), 1400);
+          onClick={sendNotification}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.15)",
+            background: "rgba(255,255,255,0.08)",
+            color: "white",
+            fontSize: 15,
+            marginBottom: 24,
+            cursor: "pointer",
           }}
         >
-          Send invite
+          Send Moment
         </button>
 
-        {inviteFlash && (
-          <div className={styles.inviteFlash}>✓ Invite sent</div>
-        )}
-      </div>
+        {/* Invitations */}
+        <h3 style={{ marginBottom: 12 }}>Invitations</h3>
 
-      {/* Invitations list */}
-      <div style={{ marginTop: 20 }}>
-        <h3>Invitations</h3>
-        {invitations.length === 0 && <div>No invites yet</div>}
+        {invitations.length === 0 && (
+          <p style={{ opacity: 0.5 }}>No invitations yet</p>
+        )}
 
         {invitations.map((invite) => (
-          <div key={invite.id}>
+          <div
+            key={invite.id}
+            style={{
+              padding: 14,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              marginBottom: 10,
+            }}
+          >
             {invite.name} — {invite.status}
           </div>
         ))}
