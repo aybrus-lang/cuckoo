@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import styles from "./SenderView.module.css";
 
 type Invitation = {
@@ -24,11 +24,10 @@ export default function SenderView({
   setInviteName,
   invitations,
 }: SenderViewProps) {
+  const [receiverLink, setReceiverLink] = useState("");
   const [sentFlash, setSentFlash] = useState(false);
   const [inviteFlash, setInviteFlash] = useState(false);
-  const [receiverLink, setReceiverLink] = useState("");
 
-  // Generate correct production URL at runtime
   useEffect(() => {
     if (typeof window !== "undefined") {
       setReceiverLink(`${window.location.origin}/?invite=receiver`);
@@ -41,11 +40,11 @@ export default function SenderView({
   }
 
   return (
-    <section style={{ marginBottom: 32 }}>
+    <main style={{ padding: 20, maxWidth: 520, margin: "0 auto" }}>
       <h2>Sender</h2>
 
       {/* Receiver link */}
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 16 }}>
         <small>Receiver link</small>
         <div style={{ display: "flex", gap: 8 }}>
           <input value={receiverLink} readOnly style={{ flex: 1 }} />
@@ -59,24 +58,21 @@ export default function SenderView({
         onClick={() => {
           sendNotification();
           setSentFlash(true);
-          setTimeout(() => setSentFlash(false), 600);
+          setTimeout(() => setSentFlash(false), 800);
         }}
       >
         {sentFlash ? "Sent ✓" : "Send notification"}
       </button>
 
-      {sentFlash && (
-        <div className={styles.flash}>
-          ✓ Notification sent
-        </div>
-      )}
+      {sentFlash && <div className={styles.flash}>✓ Notification sent</div>}
 
       {/* Invite input */}
-      <div style={{ marginTop: 16 }}>
+      <div style={{ marginTop: 20 }}>
         <input
           placeholder="Invite name"
           value={inviteName}
           onChange={(e) => setInviteName(e.target.value)}
+          style={{ marginRight: 8 }}
         />
         <button
           onClick={() => {
@@ -89,21 +85,21 @@ export default function SenderView({
         </button>
 
         {inviteFlash && (
-          <div className={styles.inviteFlash}>
-            ✓ Invite sent
-          </div>
+          <div className={styles.inviteFlash}>✓ Invite sent</div>
         )}
       </div>
 
       {/* Invitations list */}
-      <div style={{ marginTop: 16 }}>
+      <div style={{ marginTop: 20 }}>
         <h3>Invitations</h3>
+        {invitations.length === 0 && <div>No invites yet</div>}
+
         {invitations.map((invite) => (
           <div key={invite.id}>
             {invite.name} — {invite.status}
           </div>
         ))}
       </div>
-    </section>
+    </main>
   );
 }

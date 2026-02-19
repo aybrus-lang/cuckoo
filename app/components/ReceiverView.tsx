@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
 type Notification = {
   id: number;
   creator: string;
   message: string;
   time: string;
   emoji: string;
-  closing?: boolean;
   expiresAt: number;
 };
 
@@ -23,28 +20,11 @@ type ReceiverViewProps = {
   acceptInvite: (id: number) => void;
   rejectInvite: (id: number) => void;
   hasAccess: boolean;
-
   notificationsByCreator: Record<string, Notification[]>;
   dismissNotification: (id: number) => void;
   acceptedMessage: string | null;
-
   now: number;
 };
-
-function formatRemaining(ms: number) {
-  if (ms <= 0) return "expired";
-  const totalMinutes = Math.floor(ms / 60000);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-}
-
-function getExpiryClass(expiresAt: number, now: number) {
-  const remaining = expiresAt - now;
-  if (remaining <= 0) return "expired";
-  if (remaining < 5 * 60 * 1000) return "expiring";
-  return "";
-}
 
 export default function ReceiverView({
   invitations,
@@ -54,91 +34,94 @@ export default function ReceiverView({
   notificationsByCreator,
   dismissNotification,
   acceptedMessage,
-  now,
 }: ReceiverViewProps) {
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-
-  function toggleCreator(creator: string) {
-    setCollapsed((prev) => ({
-      ...prev,
-      [creator]: !prev[creator],
-    }));
-  }
-
   return (
-    <section style={{ marginBottom: 32 }}>
+    <main style={{ padding: 20, maxWidth: 520, margin: "0 auto" }}>
+      <h2>Receiver</h2>
+
+      {/* Acceptance message */}
       {acceptedMessage && (
-        <div style={{ color: "green", marginBottom: 12 }}>
-          {acceptedMessage}
+        <div
+          style={{
+            padding: 12,
+            marginBottom: 16,
+            borderRadius: 8,
+            background: "#111",
+            color: "white",
+            textAlign: "center",
+          }}
+        >
+          Access confirmed. You are now part of a privileged experience.
         </div>
       )}
 
-      {hasAccess &&
-        Object.entries(notificationsByCreator).map(([creator, notes]) => {
-          const expiredCount = notes.filter((n) => n.expiresAt <= now).length;
+      {/* Invitations */}
+      {!hasAccess && (
+        <div style={{ marginBottom: 20 }}>
+          <h3>Invitations</h3>
 
-          return (
-            <div key={creator} style={{ marginBottom: 16 }}>
-              {/* Creator header */}
-              <div
-                style={{ cursor: "pointer", fontWeight: "bold" }}
-                onClick={() => toggleCreator(creator)}
-              >
-                {creator} {collapsed[creator] ? "▸" : "▾"}
-              </div>
+          {invitations.length === 0 && <div>No invitations yet</div>}
 
-              {/* Expired summary */}
-              {expiredCount > 0 && (
-                <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 6 }}>
-                  {expiredCount} expired
+          {invitations.map((invite) => (
+            <div key={invite.id} style={{ marginBottom: 10 }}>
+              {invite.name}
+              {invite.status === "invited" && (
+                <div style={{ marginTop: 4 }}>
+                  <button onClick={() => acceptInvite(invite.id)}>
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => rejectInvite(invite.id)}
+                    style={{ marginLeft: 6 }}
+                  >
+                    Reject
+                  </button>
                 </div>
               )}
-
-              {/* Notifications */}
-              <div
-                className={`creator-group ${
-                  collapsed[creator] ? "collapsed" : "expanded"
-                }`}
-              >
-                {notes.map((note) => {
-                  const remaining = note.expiresAt - now;
-                  return (
-                    <div
-                      key={note.id}
-                      className={`notification ${
-                        note.closing ? "closing" : ""
-                      } ${getExpiryClass(note.expiresAt, now)}`}
-                    >
-                      {note.emoji} {note.message}
-                      <span style={{ marginLeft: 8, opacity: 0.6 }}>
-                        ({formatRemaining(remaining)})
-                      </span>
-                      <button onClick={() => dismissNotification(note.id)}>
-                        ×
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
+      )}
 
-      {/* Invitations */}
-      <h2>Invitations</h2>
-      {invitations.map((invite) => (
-        <div key={invite.id} style={{ marginBottom: 6 }}>
-          <span>{invite.name}</span>
-          {invite.status === "invited" ? (
-            <>
-              <button onClick={() => acceptInvite(invite.id)}>Accept</button>
-              <button onClick={() => rejectInvite(invite.id)}>Reject</button>
-            </>
-          ) : (
-            <span> — {invite.status}</span>
+      {/* Notifications */}
+      {hasAccess && (
+        <div>
+          <h3>Notifications</h3>
+
+          {Object.keys(notificationsByCreator).length === 0 && (
+            <div>No notifications yet</div>
+          )}
+
+          {Object.entries(notificationsByCreator).map(
+            ([creator, notifications]) => (
+              <div key={creator} style={{ marginBottom: 16 }}>
+                <strong>{creator}</strong>
+
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    style={{
+                      padding: 10,
+                      marginTop: 6,
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                    }}
+                  >
+                    {n.emoji} {n.message}
+                    <div style={{ fontSize: 12, opacity: 0.6 }}>{n.time}</div>
+                    <button
+                      onClick={() => dismissNotification(n.id)}
+                      style={{ marginTop: 6 }}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
-      ))}
-    </section>
+      )}
+    </main>
   );
 }
