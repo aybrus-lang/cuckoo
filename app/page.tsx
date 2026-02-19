@@ -19,9 +19,21 @@ export default function Page() {
   }
 
   // Sender view
-  if (mode === "sender") {
-    return <SenderView />;
-  }
+  if (invite === "receiver") {
+  return (
+    <ReceiverView
+      invitations={[]}
+      acceptInvite={() => {}}
+      rejectInvite={() => {}}
+      hasAccess={false}
+      notificationsByCreator={{}}
+      dismissNotification={() => {}}
+      acceptedMessage={null}
+      now={Date.now()}
+    />
+  );
+}
+
 
   // Homepage
   return (
