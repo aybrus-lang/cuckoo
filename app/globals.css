@@ -1,36 +1,45 @@
-* {
-  box-sizing: border-box;
-}
+/* Base typography */
 
 body {
-  margin: 0;
-  padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: #fafafa;
-  color: #111;
-}
-/* --- Notification polish (v1) --- */
-
-.notification {
-  padding: 6px 8px;
-  margin-bottom: 4px;
-  border-radius: 6px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  letter-spacing: 0.01em;
 }
 
-.notification.expired {
-  opacity: 0.45;
+/* Headings */
+
+h1, h2, h3 {
+  font-family: var(--font-heading), serif;
+  letter-spacing: 0.02em;
 }
 
-.notification.expiring {
-  opacity: 0.75;
+/* Sensual polish */
+
+h1 {
+  font-weight: 500;
 }
 
-.creator-group.collapsed {
-  display: none;
+h2 {
+  font-weight: 500;
+  opacity: 0.95;
 }
+
+p {
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+/* Button elegance */
 
 button {
-  margin-left: 8px;
-  cursor: pointer;
+  font-family: var(--font-body);
+  letter-spacing: 0.05em;
+}
+input {
+  font-family: var(--font-body);
+  letter-spacing: 0.03em;
+}
+
+small {
+  opacity: 0.6;
+  letter-spacing: 0.04em;
 }
