@@ -23,98 +23,77 @@ export default function ReceiverView({
     <main
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 50% 20%, #1a1a1a 0%, #0a0a0a 60%)",
+        background: "radial-gradient(circle at top, #111 0%, #050505 60%)",
         color: "white",
-        display: "flex",
-        justifyContent: "center",
-        padding: 20,
+        padding: "32px 20px",
+        maxWidth: 520,
+        margin: "0 auto",
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 520,
-          background: "rgba(255,255,255,0.04)",
-          backdropFilter: "blur(10px)",
-          borderRadius: 18,
-          padding: 24,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
-        }}
-      >
-        <h1 style={{ fontSize: 26, marginBottom: 6 }}>Receiver</h1>
-        <p style={{ opacity: 0.6, marginBottom: 24 }}>
-          You are part of a privileged experience.
-        </p>
+      <h1 style={{ marginBottom: 6 }}>Receiver</h1>
+      <p style={{ opacity: 0.7, marginBottom: 28 }}>
+        You’ve been granted privileged access.
+      </p>
 
-        {acceptedMessage && (
-          <div
-            style={{
-              padding: 16,
-              borderRadius: 12,
-              marginBottom: 20,
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.12)",
-            }}
-          >
-            {acceptedMessage}
-          </div>
-        )}
+      {acceptedMessage && (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 10,
+            marginBottom: 24,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}
+        >
+          {acceptedMessage}
+        </div>
+      )}
 
-        <h3 style={{ marginBottom: 12 }}>Invitations</h3>
+      <h3 style={{ marginBottom: 12, opacity: 0.85 }}>Invitations</h3>
 
-        {invitations.length === 0 && (
-          <p style={{ opacity: 0.5 }}>No invitations yet</p>
-        )}
+      {invitations.length === 0 && (
+        <p style={{ opacity: 0.6 }}>No invitations yet</p>
+      )}
 
-        {invitations.map((invite) => (
-          <div
-            key={invite.id}
-            style={{
-              padding: 16,
-              borderRadius: 12,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              marginBottom: 12,
-            }}
-          >
-            <div style={{ marginBottom: 12 }}>
-              {invite.name} invited you
+      {invitations.map((invite) => (
+        <div
+          key={invite.id}
+          style={{
+            padding: "16px",
+            borderRadius: 12,
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            marginBottom: 14,
+          }}
+        >
+          <div style={{ marginBottom: 12 }}>
+            <strong>{invite.name}</strong>
+            <div style={{ opacity: 0.6, fontSize: 13 }}>
+              Status: {invite.status}
             </div>
+          </div>
 
+          {invite.status === "invited" && (
             <div style={{ display: "flex", gap: 10 }}>
               <button
+                className="luxury-btn primary pulse"
                 onClick={() => acceptInvite(invite.id)}
-                style={{
-                  flex: 1,
-                  padding: 10,
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "rgba(255,255,255,0.08)",
-                  color: "white",
-                  cursor: "pointer",
-                }}
+                style={{ flex: 1 }}
               >
                 Accept
               </button>
 
               <button
+                className="luxury-btn"
                 onClick={() => rejectInvite(invite.id)}
-                style={{
-                  flex: 1,
-                  padding: 10,
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "transparent",
-                  color: "rgba(255,255,255,0.6)",
-                  cursor: "pointer",
-                }}
+                style={{ flex: 1 }}
               >
                 Decline
               </button>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      ))}
     </main>
   );
 }

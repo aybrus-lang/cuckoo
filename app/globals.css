@@ -43,3 +43,94 @@ small {
   opacity: 0.6;
   letter-spacing: 0.04em;
 }
+/* ===== Luxury Button Base ===== */
+
+.luxury-btn {
+  position: relative;
+  padding: 14px 22px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.02)
+  );
+
+  color: white;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  overflow: hidden;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border 0.25s ease,
+    background 0.25s ease;
+}
+
+/* Hover = subtle lift + glow */
+
+.luxury-btn:hover {
+  transform: translateY(-2px);
+  border: 1px solid rgba(255,255,255,0.35);
+
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.35),
+    0 0 12px rgba(255,255,255,0.08);
+}
+
+/* Active press */
+
+.luxury-btn:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Soft shimmer sweep */
+
+.luxury-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.18),
+    transparent
+  );
+
+  transition: left 0.6s ease;
+}
+
+.luxury-btn:hover::before {
+  left: 120%;
+}
+
+/* Primary action variation */
+
+.luxury-btn.primary {
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.18),
+    rgba(255,255,255,0.05)
+  );
+}
+
+/* Subtle pulse animation (for important actions) */
+
+@keyframes luxuryPulse {
+  0%   { box-shadow: 0 0 0 rgba(255,255,255,0.0); }
+  50%  { box-shadow: 0 0 18px rgba(255,255,255,0.08); }
+  100% { box-shadow: 0 0 0 rgba(255,255,255,0.0); }
+}
+
+.luxury-btn.pulse {
+  animation: luxuryPulse 3.5s ease-in-out infinite;
+}
