@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import styles from "./SenderView.module.css";
 
 type Invitation = {
   id: number;
@@ -49,6 +48,7 @@ export default function SenderView({
       }}
     >
       <h1 style={{ marginBottom: 6 }}>Sender</h1>
+
       <p style={{ opacity: 0.7, marginBottom: 28 }}>
         Control access. Control timing. Choose who is included.
       </p>
@@ -56,6 +56,7 @@ export default function SenderView({
       {/* Receiver link */}
       <div style={{ marginBottom: 28 }}>
         <small style={{ opacity: 0.6 }}>Receiver link</small>
+
         <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
           <input
             value={receiverLink}
@@ -69,6 +70,7 @@ export default function SenderView({
               borderRadius: 8,
             }}
           />
+
           <button className="luxury-btn" onClick={copyLink}>
             Copy
           </button>
@@ -125,3 +127,14 @@ export default function SenderView({
               padding: "10px 12px",
               borderRadius: 8,
               background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              marginBottom: 8,
+            }}
+          >
+            {invite.name} — {invite.status}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
