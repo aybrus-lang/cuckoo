@@ -31,50 +31,41 @@ export default function ReceiverView({
       }}
     >
       <h1 style={{ marginBottom: 6 }}>Receiver</h1>
+
       <p style={{ opacity: 0.7, marginBottom: 28 }}>
         You’ve been granted privileged access.
       </p>
 
       {acceptedMessage && (
-        <div
-          style={{
-            padding: "14px 16px",
-            borderRadius: 10,
-            marginBottom: 24,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.12)",
-          }}
-        >
+        <div className="acceptance-reveal">
           {acceptedMessage}
         </div>
       )}
 
-      <h3 style={{ marginBottom: 12, opacity: 0.85 }}>Invitations</h3>
+      <h3 style={{ marginBottom: 14, opacity: 0.85 }}>
+        Invitations
+      </h3>
 
       {invitations.length === 0 && (
         <p style={{ opacity: 0.6 }}>No invitations yet</p>
       )}
 
       {invitations.map((invite) => (
-        <div
-          key={invite.id}
-          style={{
-            padding: "16px",
-            borderRadius: 12,
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            marginBottom: 14,
-          }}
-        >
-          <div style={{ marginBottom: 12 }}>
+        <div key={invite.id} className="luxury-card">
+          <div className="luxury-card-title">
+            Invitation
+          </div>
+
+          <div className="luxury-card-body">
             <strong>{invite.name}</strong>
-            <div style={{ opacity: 0.6, fontSize: 13 }}>
-              Status: {invite.status}
-            </div>
+          </div>
+
+          <div style={{ opacity: 0.6, fontSize: 13, marginTop: 6 }}>
+            Status: {invite.status}
           </div>
 
           {invite.status === "invited" && (
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
               <button
                 className="luxury-btn primary pulse"
                 onClick={() => acceptInvite(invite.id)}
