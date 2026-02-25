@@ -94,21 +94,29 @@ export default function ReceiverView({
       {hasAccess && (
         <div>
           {acceptedMessage && (
-            <div
-              className="luxury-btn pulse"
-              style={{
-                marginBottom: 20,
-                textAlign: "center",
-                padding: 16,
-              }}
-            >
-              You are now included.
-              <br />
-              You’ll receive moments when they choose to share them.
-              <br />
-              This access is intentional.
-            </div>
-          )}
+  <div
+    style={{
+      marginBottom: 24,
+      padding: 20,
+      borderRadius: 12,
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.15)",
+      textAlign: "center",
+      animation: "fadeReveal 0.8s ease",
+    }}
+  >
+    <div style={{ fontSize: 18, marginBottom: 6 }}>
+      Privileged access granted.
+    </div>
+
+    <div style={{ opacity: 0.75, lineHeight: 1.5 }}>
+      You are now included in moments chosen for you.
+      <br />
+      This access exists because you were selected.
+    </div>
+  </div>
+)}
+
 
           {Object.entries(notificationsByCreator).map(([creator, notes]) => (
             <div key={creator}>
@@ -122,9 +130,16 @@ export default function ReceiverView({
 
               {notes.map((note) => (
                 <div
-                  key={note.id}
-                  className="luxury-btn"
-                  style={{ display: "block", marginBottom: 10, padding: 14 }}
+  key={note.id}
+  style={{
+    marginBottom: 14,
+    padding: 18,
+    borderRadius: 12,
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    animation: "fadeReveal 0.5s ease",
+  }}
+
                 >
                   <div>{note.message}</div>
                   <div style={{ fontSize: 12, opacity: 0.7 }}>

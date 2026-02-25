@@ -70,7 +70,7 @@ export default function AppClient() {
   // === Actions ===
   async function sendNotification() {
     await addDoc(collection(db, "notifications"), {
-      creator: "Creator",
+      creator: "Someone who chose you",
       message: "A moment just happened",
       time: new Date().toLocaleTimeString(),
       expiresAt: Date.now() + 1000 * 60 * 60 * 6,
