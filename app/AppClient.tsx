@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 import SenderView from "./components/SenderView";
 import ReceiverView from "./components/ReceiverView";
 
-import { db } from "../lib/firebase";
+import { db } from "@/lib/firebase";
+
+
 import {
   collection,
   addDoc,
@@ -62,22 +64,20 @@ export default function AppClient() {
     );
 
     const unsubNotifs = onSnapshot(notifQuery, (snapshot) => {
-      const data: Notification[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Notification[];
-
+      const data = snapshot.docs.map((d) => {
+        const raw = d.data() as Omit<Notification, "id">;
+        return { id: d.id, ...raw };
+      });
       setNotifications(data);
     });
 
     const inviteQuery = query(collection(db, "invitations"));
 
     const unsubInvites = onSnapshot(inviteQuery, (snapshot) => {
-      const data: Invitation[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Invitation[];
-
+      const data = snapshot.docs.map((d) => {
+        const raw = d.data() as Omit<Invitation, "id">;
+        return { id: d.id, ...raw };
+      });
       setInvitations(data);
     });
 
