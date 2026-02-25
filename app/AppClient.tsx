@@ -1,77 +1,167 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import SenderView from "./components/SenderView";
 import ReceiverView from "./components/ReceiverView";
 
+import { db } from "../lib/firebase";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  updateDoc,
+  doc,
+  query,
+  orderBy,
+} from "firebase/firestore";
+
+/* =======================
+   Types
+======================= */
+
+type Notification = {
+  id: string;
+  creator: string;
+  message: string;
+  time: string;
+  expiresAt: number;
+};
+
 type Invitation = {
-  id: number;
+  id: string;
   name: string;
   status: "invited" | "accepted" | "rejected";
 };
 
+/* =======================
+   App
+======================= */
+
 export default function AppClient() {
-  const [inviteName, setInviteName] = useState("");
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite");
+
+  const ROLE: "sender" | "receiver" = inviteToken ? "receiver" : "sender";
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [acceptedMessage, setAcceptedMessage] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [acceptedMessage, setAcceptedMessage] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
 
-  const invite =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("invite")
-      : null;
+  /* =======================
+     Live Firestore sync
+  ======================= */
 
-  function sendInvite() {
+  useEffect(() => {
+    const notifQuery = query(
+      collection(db, "notifications"),
+      orderBy("expiresAt", "desc")
+    );
+
+    const unsubNotifs = onSnapshot(notifQuery, (snapshot) => {
+      const data: Notification[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Notification[];
+
+      setNotifications(data);
+    });
+
+    const inviteQuery = query(collection(db, "invitations"));
+
+    const unsubInvites = onSnapshot(inviteQuery, (snapshot) => {
+      const data: Invitation[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Invitation[];
+
+      setInvitations(data);
+    });
+
+    return () => {
+      unsubNotifs();
+      unsubInvites();
+    };
+  }, []);
+
+  /* =======================
+     Clock
+  ======================= */
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  /* =======================
+     Actions
+  ======================= */
+
+  async function sendNotification() {
+    await addDoc(collection(db, "notifications"), {
+      creator: "Creator",
+      message: "A moment just happened",
+      time: new Date().toLocaleTimeString(),
+      expiresAt: Date.now() + 1000 * 60 * 60 * 6,
+    });
+  }
+
+  async function sendInvite() {
     if (!inviteName.trim()) return;
 
-    setInvitations((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name: inviteName,
-        status: "invited",
-      },
-    ]);
+    await addDoc(collection(db, "invitations"), {
+      name: inviteName.trim(),
+      status: "invited",
+    });
 
     setInviteName("");
   }
 
-  function acceptInvite(id: number) {
-    setInvitations((prev) =>
-      prev.map((i) =>
-        i.id === id ? { ...i, status: "accepted" } : i
-      )
-    );
+  async function acceptInvite(id: string) {
+    await updateDoc(doc(db, "invitations", id), {
+      status: "accepted",
+    });
 
-    setAcceptedMessage(
-      "You now have privileged access. You will be included when moments occur."
-    );
+    setAcceptedMessage("You are now included.");
+    setTimeout(() => setAcceptedMessage(null), 2500);
   }
 
-  function rejectInvite(id: number) {
-    setInvitations((prev) =>
-      prev.map((i) =>
-        i.id === id ? { ...i, status: "rejected" } : i
-      )
-    );
+  async function rejectInvite(id: string) {
+    await updateDoc(doc(db, "invitations", id), {
+      status: "rejected",
+    });
   }
 
-  function sendNotification() {
-    alert("Moment sent");
+  function dismissNotification(id: string) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   }
 
-  // RECEIVER MODE
-  if (invite === "receiver") {
+  const hasAccess = invitations.some((i) => i.status === "accepted");
+
+  /* =======================
+     Render
+  ======================= */
+
+  if (ROLE === "receiver") {
     return (
       <ReceiverView
         invitations={invitations}
         acceptInvite={acceptInvite}
         rejectInvite={rejectInvite}
+        hasAccess={hasAccess}
+        notificationsByCreator={{
+          Creator: notifications,
+        }}
+        dismissNotification={dismissNotification}
         acceptedMessage={acceptedMessage}
+        now={now}
       />
     );
   }
 
-  // SENDER MODE (default)
   return (
     <SenderView
       sendNotification={sendNotification}
