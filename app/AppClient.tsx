@@ -6,9 +6,7 @@ import { useSearchParams } from "next/navigation";
 import SenderView from "./components/SenderView";
 import ReceiverView from "./components/ReceiverView";
 
-import { db } from "@/lib/firebase";
-
-
+import { db } from "./lib/firebase"; // Make sure the path points to your firebase.ts
 import {
   collection,
   addDoc,
@@ -19,27 +17,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-/* =======================
-   Types
-======================= */
-
-type Notification = {
-  id: string;
-  creator: string;
-  message: string;
-  time: string;
-  expiresAt: number;
-};
-
-type Invitation = {
-  id: string;
-  name: string;
-  status: "invited" | "accepted" | "rejected";
-};
-
-/* =======================
-   App
-======================= */
+import { Notification, Invitation } from "./lib/types";
 
 export default function AppClient() {
   const searchParams = useSearchParams();
@@ -53,10 +31,7 @@ export default function AppClient() {
   const [acceptedMessage, setAcceptedMessage] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
 
-  /* =======================
-     Live Firestore sync
-  ======================= */
-
+  // === Firestore live sync ===
   useEffect(() => {
     const notifQuery = query(
       collection(db, "notifications"),
@@ -72,7 +47,6 @@ export default function AppClient() {
     });
 
     const inviteQuery = query(collection(db, "invitations"));
-
     const unsubInvites = onSnapshot(inviteQuery, (snapshot) => {
       const data = snapshot.docs.map((d) => {
         const raw = d.data() as Omit<Invitation, "id">;
@@ -87,19 +61,13 @@ export default function AppClient() {
     };
   }, []);
 
-  /* =======================
-     Clock
-  ======================= */
-
+  // === Clock tick ===
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(interval);
   }, []);
 
-  /* =======================
-     Actions
-  ======================= */
-
+  // === Actions ===
   async function sendNotification() {
     await addDoc(collection(db, "notifications"), {
       creator: "Creator",
@@ -111,28 +79,21 @@ export default function AppClient() {
 
   async function sendInvite() {
     if (!inviteName.trim()) return;
-
     await addDoc(collection(db, "invitations"), {
       name: inviteName.trim(),
       status: "invited",
     });
-
     setInviteName("");
   }
 
   async function acceptInvite(id: string) {
-    await updateDoc(doc(db, "invitations", id), {
-      status: "accepted",
-    });
-
+    await updateDoc(doc(db, "invitations", id), { status: "accepted" });
     setAcceptedMessage("You are now included.");
     setTimeout(() => setAcceptedMessage(null), 2500);
   }
 
   async function rejectInvite(id: string) {
-    await updateDoc(doc(db, "invitations", id), {
-      status: "rejected",
-    });
+    await updateDoc(doc(db, "invitations", id), { status: "rejected" });
   }
 
   function dismissNotification(id: string) {
@@ -141,10 +102,7 @@ export default function AppClient() {
 
   const hasAccess = invitations.some((i) => i.status === "accepted");
 
-  /* =======================
-     Render
-  ======================= */
-
+  // === Render ===
   if (ROLE === "receiver") {
     return (
       <ReceiverView
@@ -152,9 +110,7 @@ export default function AppClient() {
         acceptInvite={acceptInvite}
         rejectInvite={rejectInvite}
         hasAccess={hasAccess}
-        notificationsByCreator={{
-          Creator: notifications,
-        }}
+        notificationsByCreator={{ Creator: notifications }}
         dismissNotification={dismissNotification}
         acceptedMessage={acceptedMessage}
         now={now}

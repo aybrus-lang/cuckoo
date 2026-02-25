@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-type Invitation = {
-  id: number;
-  name: string;
-  status: "invited" | "accepted" | "rejected";
-};
+import { Invitation, Notification } from "../lib/types";
 
 type SenderViewProps = {
   sendNotification: () => void;
@@ -48,7 +43,6 @@ export default function SenderView({
       }}
     >
       <h1 style={{ marginBottom: 6 }}>Sender</h1>
-
       <p style={{ opacity: 0.7, marginBottom: 28 }}>
         Control access. Control timing. Choose who is included.
       </p>
@@ -56,7 +50,6 @@ export default function SenderView({
       {/* Receiver link */}
       <div style={{ marginBottom: 28 }}>
         <small style={{ opacity: 0.6 }}>Receiver link</small>
-
         <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
           <input
             value={receiverLink}
@@ -70,7 +63,6 @@ export default function SenderView({
               borderRadius: 8,
             }}
           />
-
           <button className="luxury-btn" onClick={copyLink}>
             Copy
           </button>
@@ -103,11 +95,7 @@ export default function SenderView({
           }}
         />
 
-        <button
-          className="luxury-btn"
-          onClick={sendInvite}
-          style={{ width: "100%" }}
-        >
+        <button className="luxury-btn" onClick={sendInvite} style={{ width: "100%" }}>
           Send invite
         </button>
       </div>
@@ -116,9 +104,7 @@ export default function SenderView({
       <div>
         <h3 style={{ marginBottom: 10, opacity: 0.85 }}>Invitations</h3>
 
-        {invitations.length === 0 && (
-          <p style={{ opacity: 0.6 }}>No invitations yet</p>
-        )}
+        {invitations.length === 0 && <p style={{ opacity: 0.6 }}>No invitations yet</p>}
 
         {invitations.map((invite) => (
           <div
@@ -127,7 +113,6 @@ export default function SenderView({
               padding: "10px 12px",
               borderRadius: 8,
               background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
               marginBottom: 8,
             }}
           >
