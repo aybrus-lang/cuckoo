@@ -21,7 +21,6 @@ export default function ReceiverView({
   notificationsByCreator,
   dismissNotification,
   acceptedMessage,
-  now,
 }: ReceiverViewProps) {
   return (
     <main
@@ -36,17 +35,44 @@ export default function ReceiverView({
     >
       <h1 style={{ marginBottom: 6 }}>Receiver</h1>
 
+      {/* === PRE-ACCEPT ONBOARDING === */}
+      {!hasAccess && (
+        <div
+          style={{
+            padding: 20,
+            borderRadius: 12,
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            marginBottom: 28,
+          }}
+        >
+          <h3>You’ve been invited.</h3>
+
+          <p style={{ opacity: 0.8, lineHeight: 1.5 }}>
+            You were selected to be included in private moments.
+            <br />
+            Access is limited.
+            <br />
+            Participation is optional.
+          </p>
+        </div>
+      )}
+
+      {/* === INVITATIONS === */}
       {!hasAccess && (
         <div style={{ marginBottom: 28 }}>
-          <h3>You have been invited</h3>
-          {invitations.length === 0 && <p style={{ opacity: 0.6 }}>No invitations yet</p>}
+          {invitations.length === 0 && (
+            <p style={{ opacity: 0.6 }}>Your access has not been activated.</p>
+          )}
+
           {invitations.map((invite) => (
             <div key={invite.id} style={{ marginBottom: 12 }}>
               <span>
                 {invite.name} — {invite.status}
               </span>
+
               {invite.status === "invited" && (
-                <div style={{ marginTop: 4 }}>
+                <div style={{ marginTop: 6 }}>
                   <button className="luxury-btn" onClick={() => acceptInvite(invite.id)}>
                     Accept
                   </button>
@@ -64,17 +90,36 @@ export default function ReceiverView({
         </div>
       )}
 
+      {/* === ACCEPTED STATE === */}
       {hasAccess && (
         <div>
           {acceptedMessage && (
-            <div className="luxury-btn pulse" style={{ marginBottom: 20 }}>
-              {acceptedMessage}
+            <div
+              className="luxury-btn pulse"
+              style={{
+                marginBottom: 20,
+                textAlign: "center",
+                padding: 16,
+              }}
+            >
+              You are now included.
+              <br />
+              You’ll receive moments when they choose to share them.
+              <br />
+              This access is intentional.
             </div>
           )}
 
           {Object.entries(notificationsByCreator).map(([creator, notes]) => (
-            <div key={creator} style={{ marginBottom: 20 }}>
-              <h3>{creator}'s moments</h3>
+            <div key={creator}>
+              <h3 style={{ marginBottom: 12 }}>
+                You are witnessing something you were chosen to know.
+              </h3>
+
+              {notes.length === 0 && (
+                <p style={{ opacity: 0.6 }}>Nothing has been shared yet.</p>
+              )}
+
               {notes.map((note) => (
                 <div
                   key={note.id}
@@ -85,6 +130,7 @@ export default function ReceiverView({
                   <div style={{ fontSize: 12, opacity: 0.7 }}>
                     {new Date(note.expiresAt).toLocaleString()}
                   </div>
+
                   <button
                     className="luxury-btn"
                     onClick={() => dismissNotification(note.id)}
