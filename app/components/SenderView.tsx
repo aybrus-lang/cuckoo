@@ -21,10 +21,10 @@ export default function SenderView({
   const [receiverLink, setReceiverLink] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setReceiverLink(`${window.location.origin}/?invite=receiver`);
-    }
-  }, []);
+  if (typeof window !== "undefined") {
+    setReceiverLink(`${window.location.origin}`);
+  }
+}, []);
 
   function copyLink() {
     if (!receiverLink) return;
