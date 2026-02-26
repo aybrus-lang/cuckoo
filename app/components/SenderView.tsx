@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import styles from "./SenderView.module.css";
 import { Invitation } from "../lib/types";
 
 type SenderViewProps = {
@@ -21,17 +22,14 @@ export default function SenderView({
   const [receiverLink, setReceiverLink] = useState("");
 
   useEffect(() => {
-  if (typeof window !== "undefined") {
-    setReceiverLink(`${window.location.origin}`);
-  }
-}, []);
+    if (typeof window !== "undefined") {
+      setReceiverLink(`${window.location.origin}`);
+    }
+  }, []);
 
-  function copyLink() {
-    if (!receiverLink) return;
-    navigator.clipboard.writeText(receiverLink);
+  function copyLink(link: string) {
+    navigator.clipboard.writeText(link);
   }
-
-  const isFirstTime = invitations.length === 0;
 
   return (
     <main
@@ -45,38 +43,9 @@ export default function SenderView({
       }}
     >
       <h1 style={{ marginBottom: 6 }}>Sender</h1>
-
-      {/* === FIRST TIME ONBOARDING === */}
-      {isFirstTime && (
-        <div
-          style={{
-            padding: 20,
-            borderRadius: 12,
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            marginBottom: 30,
-          }}
-        >
-          <h3 style={{ marginBottom: 10 }}>
-            Connection doesn’t require proximity.
-          </h3>
-
-          <p style={{ opacity: 0.8, lineHeight: 1.5 }}>
-            Cuckoo lets you include selected people in moments they cannot see —
-            but can feel.
-            <br />
-            You choose who is invited.
-            <br />
-            You choose when they are notified.
-            <br />
-            You control the experience.
-          </p>
-
-          <div style={{ marginTop: 16, opacity: 0.6 }}>
-            Invite someone to begin.
-          </div>
-        </div>
-      )}
+      <p style={{ opacity: 0.7, marginBottom: 28 }}>
+        Control access. Control timing. Choose who is included.
+      </p>
 
       {/* Receiver link */}
       <div style={{ marginBottom: 28 }}>
@@ -94,12 +63,13 @@ export default function SenderView({
               borderRadius: 8,
             }}
           />
-          <button className="luxury-btn" onClick={copyLink}>
+          <button className="luxury-btn" onClick={() => copyLink(receiverLink)}>
             Copy
           </button>
         </div>
       </div>
 
+      {/* Send moment */}
       <button
         className="luxury-btn primary pulse"
         onClick={sendNotification}
@@ -108,6 +78,7 @@ export default function SenderView({
         Send moment
       </button>
 
+      {/* Invite input */}
       <div style={{ marginBottom: 26 }}>
         <input
           placeholder="Invite name"
@@ -124,11 +95,16 @@ export default function SenderView({
           }}
         />
 
-        <button className="luxury-btn" onClick={sendInvite} style={{ width: "100%" }}>
+        <button
+          className="luxury-btn"
+          onClick={sendInvite}
+          style={{ width: "100%" }}
+        >
           Send invite
         </button>
       </div>
 
+      {/* Invitations with personal links */}
       <div>
         <h3 style={{ marginBottom: 10, opacity: 0.85 }}>Invitations</h3>
 
@@ -136,19 +112,41 @@ export default function SenderView({
           <p style={{ opacity: 0.6 }}>No one has been invited yet.</p>
         )}
 
-        {invitations.map((invite) => (
-          <div
-            key={invite.id}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 8,
-              background: "rgba(255,255,255,0.05)",
-              marginBottom: 8,
-            }}
-          >
-            {invite.name} — {invite.status}
-          </div>
-        ))}
+        {invitations.map((invite) => {
+          const personalLink = `${receiverLink}/?invite=${invite.token}`;
+
+          return (
+            <div
+              key={invite.id}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 10,
+                background: "rgba(255,255,255,0.05)",
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ marginBottom: 6 }}>
+                {invite.name} — {invite.status}
+              </div>
+
+              {invite.token && (
+                <>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>
+                    {personalLink}
+                  </div>
+
+                  <button
+                    className="luxury-btn"
+                    style={{ marginTop: 8 }}
+                    onClick={() => copyLink(personalLink)}
+                  >
+                    Copy personal link
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
     </main>
   );

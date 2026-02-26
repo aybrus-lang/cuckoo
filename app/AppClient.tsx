@@ -101,18 +101,20 @@ export default function AppClient() {
   }
 
   async function sendInvite() {
-    if (!inviteName.trim()) return;
+  if (!inviteName.trim()) return;
 
-    const token = Math.random().toString(36).substring(2, 10);
+  const token = Math.random().toString(36).substring(2, 10);
 
-    await addDoc(collection(db, "invitations"), {
-      name: inviteName.trim(),
-      status: "invited",
-      token,
-    });
+  console.log("Creating invite:", inviteName, token);
 
-    setInviteName("");
-  }
+  await addDoc(collection(db, "invitations"), {
+    name: inviteName.trim(),
+    status: "invited",
+    token,
+  });
+
+  setInviteName("");
+}
 
   async function acceptInvite(id: string) {
     await updateDoc(doc(db, "invitations", id), {

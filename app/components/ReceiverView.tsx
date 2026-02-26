@@ -1,13 +1,14 @@
 "use client";
 
-import { Notification, Invitation } from "../lib/types";
+import { useState, useEffect } from "react";
+import { Invitation, Notification } from "../lib/types";
 
 type ReceiverViewProps = {
   invitations: Invitation[];
   acceptInvite: (id: string) => void;
   rejectInvite: (id: string) => void;
   hasAccess: boolean;
-  notificationsByCreator: Record<string, Notification[]>;
+  notificationsByCreator: { [creator: string]: Notification[] };
   dismissNotification: (id: string) => void;
   acceptedMessage: string | null;
   now: number;
@@ -21,7 +22,18 @@ export default function ReceiverView({
   notificationsByCreator,
   dismissNotification,
   acceptedMessage,
+  now,
 }: ReceiverViewProps) {
+  const [showMoment, setShowMoment] = useState(false);
+
+  useEffect(() => {
+    if (acceptedMessage) {
+      setShowMoment(true);
+      const timer = setTimeout(() => setShowMoment(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [acceptedMessage]);
+
   return (
     <main
       style={{
@@ -35,130 +47,121 @@ export default function ReceiverView({
     >
       <h1 style={{ marginBottom: 6 }}>Receiver</h1>
 
-      {/* === PRE-ACCEPT ONBOARDING === */}
-      {!hasAccess && (
+      {invitations.length === 0 && (
+        <p style={{ opacity: 0.7, marginBottom: 28 }}>
+          You’ve been invited. <br />
+          You were selected to be included in private moments.<br />
+          Access is limited. Participation is optional.
+        </p>
+      )}
+
+      {invitations.map((invite) =>
+        invite.status === "invited" ? (
+          <div
+            key={invite.id}
+            style={{
+              padding: "20px",
+              marginBottom: 16,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.05)",
+            }}
+          >
+            <div style={{ marginBottom: 12 }}>
+              You have been invited by the sender.
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                className="luxury-btn primary"
+                style={{ flex: 1 }}
+                onClick={() => acceptInvite(invite.id)}
+              >
+                Accept
+              </button>
+              <button
+                className="luxury-btn"
+                style={{ flex: 1 }}
+                onClick={() => rejectInvite(invite.id)}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        ) : null
+      )}
+
+      {acceptedMessage && showMoment && (
         <div
           style={{
-            padding: 20,
+            marginTop: 20,
+            padding: 16,
             borderRadius: 12,
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            marginBottom: 28,
+            background: "rgba(255,255,255,0.1)",
+            textAlign: "center",
+            animation: "pulse 1.2s ease-out",
           }}
         >
-          <h3>You’ve been invited.</h3>
-
-          <p style={{ opacity: 0.8, lineHeight: 1.5 }}>
-            You were selected to be included in private moments.
-            <br />
-            Access is limited.
-            <br />
-            Participation is optional.
-          </p>
+          {acceptedMessage}
         </div>
       )}
 
-      {/* === INVITATIONS === */}
-      {!hasAccess && (
-        <div style={{ marginBottom: 28 }}>
-          {invitations.length === 0 && (
-            <p style={{ opacity: 0.6 }}>Your access has not been activated.</p>
-          )}
-
-          {invitations.map((invite) => (
-            <div key={invite.id} style={{ marginBottom: 12 }}>
-              <span>
-                {invite.name} — {invite.status}
-              </span>
-
-              {invite.status === "invited" && (
-                <div style={{ marginTop: 6 }}>
-                  <button className="luxury-btn" onClick={() => acceptInvite(invite.id)}>
-                    Accept
-                  </button>
-                  <button
-                    className="luxury-btn"
-                    onClick={() => rejectInvite(invite.id)}
-                    style={{ marginLeft: 8 }}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* === ACCEPTED STATE === */}
       {hasAccess && (
-        <div>
-          {acceptedMessage && (
-  <div
-    style={{
-      marginBottom: 24,
-      padding: 20,
-      borderRadius: 12,
-      background: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.15)",
-      textAlign: "center",
-      animation: "fadeReveal 0.8s ease",
-    }}
-  >
-    <div style={{ fontSize: 18, marginBottom: 6 }}>
-      Privileged access granted.
-    </div>
-
-    <div style={{ opacity: 0.75, lineHeight: 1.5 }}>
-      You are now included in moments chosen for you.
-      <br />
-      This access exists because you were selected.
-    </div>
-  </div>
-)}
-
-
-          {Object.entries(notificationsByCreator).map(([creator, notes]) => (
-            <div key={creator}>
-              <h3 style={{ marginBottom: 12 }}>
-                You are witnessing something you were chosen to know.
-              </h3>
-
-              {notes.length === 0 && (
-                <p style={{ opacity: 0.6 }}>Nothing has been shared yet.</p>
-              )}
-
-              {notes.map((note) => (
+        <div style={{ marginTop: 28 }}>
+          <h3 style={{ marginBottom: 12, opacity: 0.85 }}>Moments</h3>
+          {Object.entries(notificationsByCreator).map(([creator, notifs]) =>
+            notifs.length === 0 ? (
+              <p key={creator} style={{ opacity: 0.6 }}>
+                No moments yet.
+              </p>
+            ) : (
+              notifs.map((n) => (
                 <div
-  key={note.id}
-  style={{
-    marginBottom: 14,
-    padding: 18,
-    borderRadius: 12,
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    animation: "fadeReveal 0.5s ease",
-  }}
-
+                  key={n.id}
+                  style={{
+                    marginBottom: 12,
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: "rgba(255,255,255,0.05)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  <div>{note.message}</div>
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>
-                    {new Date(note.expiresAt).toLocaleString()}
+                  <div>
+                    <strong>{creator}:</strong> {n.message}{" "}
+                    <span style={{ opacity: 0.6, fontSize: 12 }}>
+                      {new Date(n.expiresAt).toLocaleTimeString()}
+                    </span>
                   </div>
-
                   <button
                     className="luxury-btn"
-                    onClick={() => dismissNotification(note.id)}
-                    style={{ marginTop: 6 }}
+                    style={{ height: 32, padding: "0 12px" }}
+                    onClick={() => dismissNotification(n.id)}
                   >
                     Dismiss
                   </button>
                 </div>
-              ))}
-            </div>
-          ))}
+              ))
+            )
+          )}
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes pulse {
+          0% {
+            transform: scale(0.95);
+            opacity: 0.6;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 0.9;
+          }
+        }
+      `}</style>
     </main>
   );
 }
