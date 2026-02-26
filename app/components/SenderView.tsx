@@ -1,4 +1,5 @@
 "use client";
+<h1 style={{ marginBottom: 6 }}>🔴🐦 Cuckoo</h1>
 
 import { useState, useEffect } from "react";
 import styles from "./SenderView.module.css";
