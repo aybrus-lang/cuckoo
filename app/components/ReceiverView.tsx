@@ -126,12 +126,16 @@ export default function ReceiverView({
                     alignItems: "center",
                   }}
                 >
-                  <div>
-                    <strong>{creator}:</strong> {n.message}{" "}
-                    <span style={{ opacity: 0.6, fontSize: 12 }}>
-                      {new Date(n.expiresAt).toLocaleTimeString()}
-                    </span>
-                  </div>
+                 <div>
+  {(n as any).symbol && (
+    <span style={{ marginRight: 6 }}>{(n as any).symbol}</span>
+  )}
+  <strong>{creator}:</strong> {n.message}{" "}
+  <span style={{ opacity: 0.6, fontSize: 12 }}>
+    {new Date(n.expiresAt).toLocaleTimeString()}
+  </span>
+</div>
+
                   <button
                     className="luxury-btn"
                     style={{ height: 32, padding: "0 12px" }}

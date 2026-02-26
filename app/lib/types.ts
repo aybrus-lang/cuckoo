@@ -3,12 +3,16 @@ export type Notification = {
   creator: string;
   message: string;
   expiresAt: number;
-  inviteId: string;   // REQUIRED for private notifications
+  inviteId: string;
+
+  // optional = old docs still valid
+  symbol?: string;
 };
+
 
 export type Invitation = {
   id: string;
   name: string;
   status: "invited" | "accepted" | "rejected";
-  token: string;      // REQUIRED for private links
+  token: string;
 };
