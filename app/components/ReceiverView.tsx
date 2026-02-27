@@ -1,5 +1,5 @@
 "use client";
-<h1 style={{ marginBottom: 6 }}>🔴🐦 Cuckoo</h1>
+<h1 style={{ marginBottom: 6 }}>🐦 Cuckoo</h1>
 
 import { useState, useEffect } from "react";
 import { Invitation, Notification } from "../lib/types";
