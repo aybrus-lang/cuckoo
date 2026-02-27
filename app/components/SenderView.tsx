@@ -1,8 +1,6 @@
 "use client";
-<h1 style={{ marginBottom: 6 }}>🐦 Cuckoo</h1>
 
-import { useState, useEffect } from "react";
-import styles from "./SenderView.module.css";
+import { useEffect, useState } from "react";
 import { Invitation } from "../lib/types";
 
 type SenderViewProps = {
@@ -22,12 +20,11 @@ export default function SenderView({
   invitations,
   cancelInvite,
 }: SenderViewProps) {
-
   const [receiverLink, setReceiverLink] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setReceiverLink(`${window.location.origin}`);
+      setReceiverLink(window.location.origin);
     }
   }, []);
 
@@ -46,32 +43,10 @@ export default function SenderView({
         margin: "0 auto",
       }}
     >
-      <h1 style={{ marginBottom: 6 }}>Sender</h1>
+      <h1 style={{ marginBottom: 6 }}>🐦 Cuckoo — Sender</h1>
       <p style={{ opacity: 0.7, marginBottom: 28 }}>
         Control access. Control timing. Choose who is included.
       </p>
-
-      {/* Receiver link */}
-      <div style={{ marginBottom: 28 }}>
-        <small style={{ opacity: 0.6 }}>Receiver link</small>
-        <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-          <input
-            value={receiverLink}
-            readOnly
-            style={{
-              flex: 1,
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "white",
-              padding: "10px",
-              borderRadius: 8,
-            }}
-          />
-          <button className="luxury-btn" onClick={() => copyLink(receiverLink)}>
-            Copy
-          </button>
-        </div>
-      </div>
 
       {/* Send moment */}
       <button
@@ -108,12 +83,12 @@ export default function SenderView({
         </button>
       </div>
 
-      {/* Invitations with personal links */}
+      {/* Invitations */}
       <div>
         <h3 style={{ marginBottom: 10, opacity: 0.85 }}>Invitations</h3>
 
         {invitations.length === 0 && (
-          <p style={{ opacity: 0.6 }}>No one has been invited yet.</p>
+          <p style={{ opacity: 0.6 }}>No invitations yet</p>
         )}
 
         {invitations.map((invite) => {
@@ -123,31 +98,46 @@ export default function SenderView({
             <div
               key={invite.id}
               style={{
-                padding: "12px 14px",
+                padding: "12px",
                 borderRadius: 10,
                 background: "rgba(255,255,255,0.05)",
                 marginBottom: 12,
               }}
             >
               <div style={{ marginBottom: 6 }}>
-                {invite.name} — {invite.status}
+                <strong>{invite.name}</strong> — {invite.status}
               </div>
 
-              {invite.token && (
-                <>
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>
-                    {personalLink}
-                  </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  opacity: 0.7,
+                  wordBreak: "break-all",
+                  marginBottom: 8,
+                }}
+              >
+                {personalLink}
+              </div>
 
-                  <button
-                    className="luxury-btn"
-                    style={{ marginTop: 8 }}
-                    onClick={() => copyLink(personalLink)}
-                  >
-                    Copy personal link
-                  </button>
-                </>
-              )}
+              <button
+                className="luxury-btn"
+                style={{ width: "100%", marginBottom: 8 }}
+                onClick={() => copyLink(personalLink)}
+              >
+                Copy link
+              </button>
+
+              <button
+                className="luxury-btn"
+                style={{
+                  width: "100%",
+                  border: "1px solid rgba(255,80,80,0.4)",
+                  color: "#ffb3b3",
+                }}
+                onClick={() => cancelInvite(invite.id)}
+              >
+                Cancel invitation
+              </button>
             </div>
           );
         })}
