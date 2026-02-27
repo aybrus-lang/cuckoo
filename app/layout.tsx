@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "🔴🐦 Cuckoo",
+  title: "🐦 Cuckoo",
   description: "Private shared moments",
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        {/* Global Header */}
+        {/* Global Brand Header */}
         <div
           style={{
             padding: "14px 20px",
@@ -31,7 +31,7 @@ export default function RootLayout({
             letterSpacing: "0.08em",
           }}
         >
-          🔴🐦 Cuckoo
+          🐦 Cuckoo
         </div>
 
         {children}
