@@ -1,20 +1,9 @@
 import "./globals.css";
-import { Playfair_Display, Inter } from "next/font/google";
+import type { Metadata } from "next";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-heading",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-});
-
-export const metadata = {
-  title: "Cuckoo",
-  description: "Private inclusion. Real-time presence.",
+export const metadata: Metadata = {
+  title: "🔴🐦 Cuckoo",
+  description: "Private shared moments",
 };
 
 export default function RootLayout({
@@ -23,8 +12,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
-      <body>{children}</body>
+    <html lang="en">
+      <body
+        style={{
+          margin: 0,
+          background: "#050505",
+          color: "white",
+          fontFamily: "system-ui, sans-serif",
+        }}
+      >
+        {/* Global Header */}
+        <div
+          style={{
+            padding: "14px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            background: "#050505",
+            fontSize: 14,
+            letterSpacing: "0.08em",
+          }}
+        >
+          🔴🐦 Cuckoo
+        </div>
+
+        {children}
+      </body>
     </html>
   );
 }
