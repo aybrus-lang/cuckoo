@@ -1,5 +1,5 @@
 "use client";
-<h1 style={{ marginBottom: 6 }}>🔴🐦 Cuckoo</h1>
+<h1 style={{ marginBottom: 6 }}>🐦 Cuckoo</h1>
 
 import { useState, useEffect } from "react";
 import styles from "./SenderView.module.css";
@@ -11,6 +11,7 @@ type SenderViewProps = {
   inviteName: string;
   setInviteName: (name: string) => void;
   invitations: Invitation[];
+  cancelInvite: (id: string) => void;
 };
 
 export default function SenderView({
@@ -19,7 +20,9 @@ export default function SenderView({
   inviteName,
   setInviteName,
   invitations,
+  cancelInvite,
 }: SenderViewProps) {
+
   const [receiverLink, setReceiverLink] = useState("");
 
   useEffect(() => {

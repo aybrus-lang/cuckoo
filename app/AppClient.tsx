@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { deleteDoc } from "firebase/firestore";
 
 import SenderView from "./components/SenderView";
 import ReceiverView from "./components/ReceiverView";
@@ -67,8 +68,13 @@ const inviteToken = searchParams.get("invite") ?? null;
     return () => clearInterval(interval);
   }, []);
 
-  // === Actions ===
-  async function sendNotification() {
+ // === Actions ===
+
+async function cancelInvite(id: string) {
+  await deleteDoc(doc(db, "invitations", id));
+}
+
+async function sendNotification() {
   const symbols = ["🔥", "💧", "⏰"];
   const symbol = symbols[Math.floor(Math.random() * symbols.length)];
 
@@ -84,6 +90,7 @@ const inviteToken = searchParams.get("invite") ?? null;
     });
   }
 }
+
 
 
  async function sendInvite() {
@@ -134,12 +141,13 @@ const inviteToken = searchParams.get("invite") ?? null;
   }
 
   return (
-    <SenderView
-      sendNotification={sendNotification}
-      sendInvite={sendInvite}
-      inviteName={inviteName}
-      setInviteName={setInviteName}
-      invitations={invitations}
-    />
+   <SenderView
+  sendNotification={sendNotification}
+  sendInvite={sendInvite}
+  inviteName={inviteName}
+  setInviteName={setInviteName}
+  invitations={invitations}
+  cancelInvite={cancelInvite}
+/>
   );
 }
