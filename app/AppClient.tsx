@@ -25,6 +25,7 @@ export default function AppClient() {
   const inviteToken = searchParams.get("invite") ?? null;
 
   const ROLE: "sender" | "receiver" = inviteToken ? "receiver" : "sender";
+  const [creatorName, setCreatorName] = useState("Pete");
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -102,7 +103,7 @@ export default function AppClient() {
     for (const invite of acceptedInvites) {
       await addDoc(collection(db, "notifications"), {
         inviteId: invite.id,
-        creator: "Creator",
+        creator: creatorName,
         message: "A moment just happened",
         symbol,
         expiresAt: Date.now() + 1000 * 60 * 60 * 6,
@@ -164,13 +165,16 @@ export default function AppClient() {
   }
 
   return (
-    <SenderView
-      sendNotification={sendNotification}
-      sendInvite={sendInvite}
-      inviteName={inviteName}
-      setInviteName={setInviteName}
-      invitations={invitations}
-      cancelInvite={cancelInvite}
-    />
-  );
+  <SenderView
+    sendNotification={sendNotification}
+    sendInvite={sendInvite}
+    inviteName={inviteName}
+    setInviteName={setInviteName}
+    invitations={invitations}
+    cancelInvite={cancelInvite}
+    creatorName={creatorName}
+    setCreatorName={setCreatorName}
+  />
+);
+
 }

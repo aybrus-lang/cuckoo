@@ -10,6 +10,8 @@ type SenderViewProps = {
   setInviteName: (name: string) => void;
   invitations: Invitation[];
   cancelInvite: (id: string) => void;
+  creatorName: string;
+  setCreatorName: (name: string) => void;
 };
 
 export default function SenderView({
@@ -19,12 +21,14 @@ export default function SenderView({
   setInviteName,
   invitations,
   cancelInvite,
+  creatorName,
+  setCreatorName,
 }: SenderViewProps) {
-  const [receiverLink, setReceiverLink] = useState("");
+  const [receiverBaseLink, setReceiverBaseLink] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setReceiverLink(window.location.origin);
+      setReceiverBaseLink(window.location.origin);
     }
   }, []);
 
@@ -47,6 +51,27 @@ export default function SenderView({
       <p style={{ opacity: 0.7, marginBottom: 28 }}>
         Control access. Control timing. Choose who is included.
       </p>
+
+      {/* Sender identity */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 4 }}>
+          Sender name
+        </div>
+
+        <input
+          value={creatorName}
+          onChange={(e) => setCreatorName(e.target.value)}
+          placeholder="Enter your name"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: 8,
+            border: "1px solid rgba(255,255,255,0.15)",
+            background: "rgba(255,255,255,0.05)",
+            color: "white",
+          }}
+        />
+      </div>
 
       {/* Send moment */}
       <button
@@ -83,7 +108,7 @@ export default function SenderView({
         </button>
       </div>
 
-      {/* Invitations */}
+      {/* Invitations list */}
       <div>
         <h3 style={{ marginBottom: 10, opacity: 0.85 }}>Invitations</h3>
 
@@ -92,7 +117,7 @@ export default function SenderView({
         )}
 
         {invitations.map((invite) => {
-          const personalLink = `${receiverLink}/?invite=${invite.token}`;
+          const personalLink = `${receiverBaseLink}/?invite=${invite.token}`;
 
           return (
             <div
