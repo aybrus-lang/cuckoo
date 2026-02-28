@@ -1,15 +1,13 @@
 "use client";
-<h1 style={{ marginBottom: 6 }}>🐦 Cuckoo</h1>
 
-import { useState, useEffect } from "react";
-import { Invitation, Notification } from "../lib/types";
+import { Notification, Invitation } from "../lib/types";
 
-type ReceiverViewProps = {
+type Props = {
   invitations: Invitation[];
   acceptInvite: (id: string) => void;
   rejectInvite: (id: string) => void;
   hasAccess: boolean;
-  notificationsByCreator: { [creator: string]: Notification[] };
+  notificationsByCreator: Record<string, Notification[]>;
   dismissNotification: (id: string) => void;
   acceptedMessage: string | null;
   now: number;
@@ -23,150 +21,177 @@ export default function ReceiverView({
   notificationsByCreator,
   dismissNotification,
   acceptedMessage,
-  now,
-}: ReceiverViewProps) {
-  const [showMoment, setShowMoment] = useState(false);
-
-  useEffect(() => {
-    if (acceptedMessage) {
-      setShowMoment(true);
-      const timer = setTimeout(() => setShowMoment(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [acceptedMessage]);
+}: Props) {
+  const pendingInvites = invitations.filter(
+    (i) => i.status === "invited"
+  );
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "radial-gradient(circle at top, #111 0%, #050505 60%)",
-        color: "white",
-        padding: "32px 20px",
-        maxWidth: 520,
-        margin: "0 auto",
-      }}
-    >
-      <h1 style={{ marginBottom: 6 }}>Receiver</h1>
+    <div style={{ padding: 20, color: "white" }}>
+      <h2 style={{ marginBottom: 20 }}>Receiver</h2>
 
-      {invitations.length === 0 && (
-        <p style={{ opacity: 0.7, marginBottom: 28 }}>
-          You’ve been invited. <br />
-          You were selected to be included in private moments.<br />
-          Access is limited. Participation is optional.
-        </p>
-      )}
+      {/* =========================
+         Onboarding / Invitation
+      ========================= */}
+      {!hasAccess && (
+        <div
+          style={{
+            padding: 18,
+            borderRadius: 12,
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            marginBottom: 24,
+            maxWidth: 420,
+          }}
+        >
+          <div style={{ fontSize: 16, marginBottom: 12 }}>
+            You’ve been invited.
+          </div>
 
-      {invitations.map((invite) =>
-        invite.status === "invited" ? (
-          <div
-            key={invite.id}
-            style={{
-              padding: "20px",
-              marginBottom: 16,
-              borderRadius: 10,
-              background: "rgba(255,255,255,0.05)",
-            }}
-          >
-            <div style={{ marginBottom: 12 }}>
-              You have been invited by the sender.
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ opacity: 0.7, marginBottom: 14 }}>
+            You were selected to be included in private moments.
+            Access is limited. Participation is optional.
+          </div>
+
+          {pendingInvites.map((invite) => (
+            <div key={invite.id} style={{ marginBottom: 10 }}>
               <button
-                className="luxury-btn primary"
-                style={{ flex: 1 }}
+                className="luxury-btn"
                 onClick={() => acceptInvite(invite.id)}
+                style={{ marginRight: 8 }}
               >
                 Accept
               </button>
+
               <button
                 className="luxury-btn"
-                style={{ flex: 1 }}
                 onClick={() => rejectInvite(invite.id)}
               >
-                Reject
+                Decline
               </button>
             </div>
-          </div>
-        ) : null
+          ))}
+
+          {!pendingInvites.length && (
+            <div style={{ opacity: 0.6 }}>
+              Your access has not been activated.
+            </div>
+          )}
+        </div>
       )}
 
-      {acceptedMessage && showMoment && (
+      {/* =========================
+         Acceptance confirmation
+      ========================= */}
+      {acceptedMessage && (
         <div
           style={{
-            marginTop: 20,
-            padding: 16,
-            borderRadius: 12,
-            background: "rgba(255,255,255,0.1)",
-            textAlign: "center",
-            animation: "pulse 1.2s ease-out",
+            padding: 12,
+            borderRadius: 10,
+            marginBottom: 20,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            animation: "fadeIn 0.4s ease",
           }}
         >
           {acceptedMessage}
         </div>
       )}
 
+      {/* =========================
+         Moments feed
+      ========================= */}
       {hasAccess && (
-        <div style={{ marginTop: 28 }}>
-          <h3 style={{ marginBottom: 12, opacity: 0.85 }}>Moments</h3>
-          {Object.entries(notificationsByCreator).map(([creator, notifs]) =>
-            notifs.length === 0 ? (
-              <p key={creator} style={{ opacity: 0.6 }}>
-                No moments yet.
-              </p>
-            ) : (
-              notifs.map((n) => (
-                <div
-                  key={n.id}
-                  style={{
-                    marginBottom: 12,
-                    padding: "12px 14px",
-                    borderRadius: 10,
-                    background: "rgba(255,255,255,0.05)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                 <div>
-  {(n as any).symbol && (
-    <span style={{ marginRight: 6 }}>{(n as any).symbol}</span>
-  )}
-  <strong>{creator}:</strong> {n.message}{" "}
-  <span style={{ opacity: 0.6, fontSize: 12 }}>
-    {new Date(n.expiresAt).toLocaleTimeString()}
-  </span>
-</div>
+        <div>
+          <h3 style={{ marginBottom: 14 }}>Moments</h3>
 
-                  <button
-                    className="luxury-btn"
-                    style={{ height: 32, padding: "0 12px" }}
-                    onClick={() => dismissNotification(n.id)}
+          {Object.entries(notificationsByCreator).map(
+            ([creator, notifications]) => (
+              <div key={creator}>
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      marginBottom: 12,
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+
+                      animation:
+                        "momentIn 0.6s ease, momentGlow 1.8s ease",
+                    }}
                   >
-                    Dismiss
-                  </button>
-                </div>
-              ))
+                    <div>
+                      <strong>
+                        {n.symbol ? `${n.symbol} ` : ""}
+                        {n.creator}:
+                      </strong>{" "}
+                      {n.message}
+                      <span
+                        style={{
+                          opacity: 0.6,
+                          fontSize: 12,
+                          marginLeft: 8,
+                        }}
+                      >
+                        {new Date(n.expiresAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+
+                    <button
+                      className="luxury-btn"
+                      style={{ marginTop: 8 }}
+                      onClick={() => dismissNotification(n.id)}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                ))}
+              </div>
             )
           )}
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes pulse {
-          0% {
-            transform: scale(0.95);
-            opacity: 0.6;
+      {/* =========================
+         Animations
+      ========================= */}
+      <style jsx global>{`
+        @keyframes momentIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
           }
-          50% {
-            transform: scale(1.05);
+          to {
             opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes momentGlow {
+          0% {
+            box-shadow: 0 0 0px rgba(255, 80, 80, 0);
+          }
+          40% {
+            box-shadow: 0 0 14px rgba(255, 80, 80, 0.35);
           }
           100% {
-            transform: scale(1);
-            opacity: 0.9;
+            box-shadow: 0 0 0px rgba(255, 80, 80, 0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
       `}</style>
-    </main>
+    </div>
   );
 }
