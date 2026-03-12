@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { requestNotificationPermission } from "./lib/messaging";
+
 
 import SenderView from "./components/SenderView";
 import ReceiverView from "./components/ReceiverView";
@@ -83,6 +85,10 @@ export default function AppClient() {
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(interval);
+    useEffect(() => {
+  requestNotificationPermission();
+}, []);
+
   }, []);
 
   // =========================
